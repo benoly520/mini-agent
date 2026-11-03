@@ -57,7 +57,8 @@
 
 ```
 mini-agent/
-├── doc/                    # SDD 文档：核心层 + 形态层，见 doc/README.md
+├── doc/                    # SDD 文档：概念 + 核心 + 形态，见 doc/README.md
+│   ├── 000-concepts.md
 │   ├── 001-requirements.md
 │   ├── 002-design.md
 │   ├── 003-tasks.md

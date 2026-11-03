@@ -25,6 +25,7 @@
 
 ## 先读文档
 
+0. [`doc/000-concepts.md`](./doc/000-concepts.md) —— 概念前置：模型只生成文本，工具由你的代码执行
 1. [`doc/001-requirements.md`](./doc/001-requirements.md) —— 要做什么、怎么算做完
 2. [`doc/002-design.md`](./doc/002-design.md) —— 怎么做，含 4 个必踩的坑
 3. [`doc/003-tasks.md`](./doc/003-tasks.md) —— 按什么顺序做，每步学到什么
