@@ -59,6 +59,27 @@ macOS / Linux / Windows 11 均可直接运行。代码里没有任何平台绑�
 
 唯一硬要求是 Node ≥ 22.18（需要原生运行 `.ts` 的能力）。
 
+### 配置（首次必做）
+
+`.env` 含密钥，已被 gitignore 排除，所以 **clone 下来是没有的**，必须自己生成：
+
+```bash
+cd code
+cp .env.example .env
+```
+
+Windows 上 `cp` 不可用，用对应命令：
+
+```powershell
+Copy-Item .env.example .env          # PowerShell
+copy .env.example .env               # cmd
+```
+
+然后编辑 `code/.env`，把 `LLM_API_KEY=` 后面填上自己的 Key
+（智谱开放平台控制台获取）。两种形态共用这一份配置。
+
+> 已经配好 Key 的机器**不要**再执行复制命令，会把真实 Key 覆盖成空模板。
+
 ### 启动
 
 ```bash
@@ -72,12 +93,6 @@ pnpm start          # 或 npm start，打开 http://localhost:3000
 
 三种方式完全等价：`pnpm start` / `npm start` / `node src/index.ts`。
 选哪个取决于你机器上装了什么，行为一模一样。
-
-### 配置
-
-两种形态共用 `code/.env`，里面需要有 `LLM_API_KEY`。
-**若该文件还不存在**，才执行 `cd code && cp .env.example .env` 再填入 Key；
-已存在就不要再复制，否则会把真实 Key 覆盖掉。
 
 ### 安装依赖（仅类型检查需要）
 

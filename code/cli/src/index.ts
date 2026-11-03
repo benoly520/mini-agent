@@ -1,6 +1,7 @@
 import { createInterface } from 'node:readline/promises';
 import { stdin, stdout } from 'node:process';
 import { config } from '../../core/src/config.ts';
+import { ENV_FILE } from '../../core/src/env.ts';
 import { createSession, runAgent } from '../../core/src/agent.ts';
 import type { AgentEvent } from '../../core/src/agent.ts';
 
@@ -47,8 +48,9 @@ async function main(): Promise<void> {
   // 没有 Key 就立刻友好提示，而不是等报一堆堆栈信息
   if (!config.apiKey) {
     console.error('未检测到 LLM_API_KEY。');
-    // 常见原因是 .env 已存在但 Key 为空（例如误把 .env.example 的内容存了进去）
-    console.error('请确认 .env 与 src/ 同级，且 LLM_API_KEY= 后面已填上 Key。');
+    // 直接打印绝对路径：new clone 的用户不知道 code/.env 放在哪
+    console.error(`请在该文件里填写 LLM_API_KEY：${ENV_FILE}`);
+    console.error('若文件还不存在，先复制一份：cd code && cp .env.example .env');
     process.exit(1);
   }
 

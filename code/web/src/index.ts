@@ -2,6 +2,7 @@ import { createServer } from 'node:http';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { createSession, runAgent } from '../../core/src/agent.ts';
+import { config } from '../../core/src/config.ts';
 
 /**
  * Web 版入口：把 agent 的事件流通过 SSE 推给浏览器。
@@ -112,6 +113,12 @@ const server = createServer(async (req, res) => {
     res.end(`服务端错误：${(err as Error).message}`);
   }
 });
+
+// 缺 Key 时照样启动服务，让用户能先看到界面；但必须在启动日志里说清楚
+if (!config.apiKey) {
+  console.warn('警告：code/.env 中未配置 LLM_API_KEY，对话请求会失败。');
+  console.warn('请参考 code/.env.example 生成 .env 并填入 Key。');
+}
 
 server.listen(PORT, () => {
   console.log(`mini-agent web 已启动：http://localhost:${PORT}`);

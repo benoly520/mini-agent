@@ -16,6 +16,9 @@ import { parseEnv } from 'node:util';
  */
 const ENV_PATH = new URL('../../.env', import.meta.url);
 
+/** 配置文件的实际绝对路径。启动失败时直接告诉用户去哪找，比让人猜更省事 */
+export const ENV_FILE = fileURLToPath(ENV_PATH);
+
 try {
   const raw = readFileSync(fileURLToPath(ENV_PATH), 'utf8');
   const parsed = parseEnv(raw.replace(/^\uFEFF/, ''));
