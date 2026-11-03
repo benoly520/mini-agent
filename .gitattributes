@@ -1,0 +1,8 @@
+# 统一换行符为 LF：Windows 用户 clone 后也不会变成 CRLF，
+# 避免出现「整份文件都改了」的假 diff，也让 source 在不同平台上完全一致。
+* text=auto eol=lf
+
+# 二进制文件不要做换行转换
+*.png binary
+*.jpg binary
+*.ico binary

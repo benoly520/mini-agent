@@ -46,6 +46,19 @@
 | 包管理器 | 可选 | pnpm / npm 都行；都不装就直接 `node src/index.ts` |
 | 依赖安装 | **不需要** | 零运行时依赖；只有跑类型检查才需 `pnpm install` |
 
+### 平台支持
+
+macOS / Linux / Windows 11 均可直接运行。代码里没有任何平台绑定：
+
+| 关注点 | 做法 |
+| --- | --- |
+| 路径 | 全部用 `import.meta.url` 解析，与当前目录、分隔符无关 |
+| `.env` 编码 | 读取时剥离 UTF-8 BOM，兼容 CRLF 换行（Windows 记事本常见） |
+| npm scripts | 只有 `node src/index.ts`，不含 `&&`、`>` 等 shell 语法 |
+| 换行符 | `.gitattributes` 统一为 LF，避免跨平台假 diff |
+
+唯一硬要求是 Node ≥ 22.18（需要原生运行 `.ts` 的能力）。
+
 ### 启动
 
 ```bash

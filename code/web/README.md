@@ -15,7 +15,16 @@ pnpm start        # 或 npm start / node src/index.ts，三者等价
 若要类型检查：`pnpm install && pnpm typecheck`。
 
 配置（API Key / 模型）共用上一级的 `code/.env`，无需重复填写。
-换端口：`PORT=8080 node src/index.ts`。
+换端口（各平台写法不同）：
+
+```bash
+# bash / WSL
+PORT=8080 node src/index.ts
+# PowerShell
+$env:PORT=8080; node src/index.ts
+# cmd
+set PORT=8080 && node src/index.ts
+```
 
 ## 和 CLI 版的关系
 
