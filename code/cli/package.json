@@ -1,0 +1,18 @@
+{
+  "name": "mini-agent-cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "从 0 实现的最小 AI Agent（终端版），零框架、零依赖",
+  "type": "module",
+  "engines": {
+    "node": ">=22.18"
+  },
+  "scripts": {
+    "start": "node src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
+}

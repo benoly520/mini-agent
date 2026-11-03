@@ -1,0 +1,15 @@
+{
+  "name": "mini-agent-web",
+  "version": "0.1.0",
+  "private": true,
+  "description": "mini-agent 的 Web 版：用 SSE 把 agent 事件流推给浏览器",
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "typescript": "^7.0.2"
+  }
+}

@@ -1,0 +1,7 @@
+{
+  "name": "mini-agent-core",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Agent 核心：循环、模型调用、工具。不包含任何交互界面",
+  "type": "module"
+}

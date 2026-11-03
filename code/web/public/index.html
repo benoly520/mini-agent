@@ -1,0 +1,332 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>mini-agent</title>
+  <style>
+    /* 纯手写样式，不引任何 CSS 框架 */
+    :root {
+      --bg: #f6f7f9;
+      --card: #ffffff;
+      --ink: #1f2328;
+      --muted: #6b7280;
+      --line: #e5e7eb;
+      --brand: #2563eb;
+      --tool: #8b5cf6;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      background: var(--bg);
+      color: var(--ink);
+      font: 15px/1.6 -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+        'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+      display: flex;
+      justify-content: center;
+    }
+
+    main {
+      width: 100%;
+      max-width: 760px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      padding: 0 16px;
+    }
+
+    header {
+      padding: 20px 4px 12px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 17px;
+      font-weight: 600;
+    }
+
+    header p {
+      margin: 4px 0 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    #log {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px 4px;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .msg {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      max-width: 92%;
+    }
+
+    .msg.user {
+      align-self: flex-end;
+      align-items: flex-end;
+    }
+
+    .bubble {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 10px 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .msg.user .bubble {
+      background: var(--brand);
+      border-color: var(--brand);
+      color: #fff;
+    }
+
+    .tool {
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      color: var(--tool);
+      background: #f5f3ff;
+      border-left: 2px solid var(--tool);
+      border-radius: 4px;
+      padding: 4px 8px;
+      word-break: break-all;
+    }
+
+    .error {
+      color: #b91c1c;
+      background: #fef2f2;
+      border-left: 2px solid #b91c1c;
+      border-radius: 4px;
+      padding: 6px 10px;
+      font-size: 13px;
+    }
+
+    form {
+      display: flex;
+      gap: 10px;
+      padding: 12px 0 20px;
+      border-top: 1px solid var(--line);
+    }
+
+    input {
+      flex: 1;
+      font: inherit;
+      color: inherit;
+      padding: 11px 14px;
+      border: 1px solid var(--line);
+      border-radius: 10px;
+      background: var(--card);
+      outline: none;
+    }
+
+    input:focus { border-color: var(--brand); }
+
+    button {
+      font: inherit;
+      font-weight: 500;
+      color: #fff;
+      background: var(--brand);
+      border: 0;
+      border-radius: 10px;
+      padding: 0 20px;
+      cursor: pointer;
+    }
+
+    button:disabled { opacity: 0.5; cursor: default; }
+
+    .empty {
+      margin: auto;
+      color: var(--muted);
+      font-size: 14px;
+      text-align: center;
+      line-height: 2;
+    }
+
+    .empty code {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 6px;
+      padding: 2px 8px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <h1>mini-agent</h1>
+      <p>零框架实现 · 工具调用过程全程可见</p>
+    </header>
+
+    <div id="log">
+      <div class="empty" id="empty">
+        输入 <code>明天天气</code> 试试<br />
+        它会先定位，再查天气，最后用中文回答
+      </div>
+    </div>
+
+    <form id="form">
+      <input id="input" placeholder="问点什么…" autocomplete="off" />
+      <button id="send" type="submit">发送</button>
+    </form>
+  </main>
+
+  <script>
+    const logEl = document.getElementById('log');
+    const formEl = document.getElementById('form');
+    const inputEl = document.getElementById('input');
+    const sendEl = document.getElementById('send');
+    const emptyEl = document.getElementById('empty');
+    let busy = false;
+
+    /** 滚到底部，保证新内容可见 */
+    function scrollToEnd() {
+      logEl.scrollTop = logEl.scrollHeight;
+    }
+
+    /** 把过长文本截断，避免工具返回刷屏 */
+    function shorten(text, max = 160) {
+      const one = String(text ?? '').replace(/\s+/g, ' ').trim();
+      return one.length > max ? one.slice(0, max) + '…' : one;
+    }
+
+    /** 创建一条消息容器，返回气泡元素 */
+    function addMessage(role) {
+      const wrapper = document.createElement('div');
+      wrapper.className = 'msg ' + role;
+      const bubble = document.createElement('div');
+      bubble.className = 'bubble';
+      wrapper.appendChild(bubble);
+      logEl.appendChild(wrapper);
+      scrollToEnd();
+      return bubble;
+    }
+
+    /**
+     * 解析 SSE 文本块。
+     * 一条事件长这样：event: text\ndata: {"chunk":"你"}\n\n
+     */
+    function createSseParser(onEvent) {
+      let buffer = '';
+      return (text) => {
+        buffer += text;
+        let idx = buffer.indexOf('\n\n');
+        while (idx !== -1) {
+          const raw = buffer.slice(0, idx);
+          buffer = buffer.slice(idx + 2);
+          idx = buffer.indexOf('\n\n');
+
+          let event = 'message';
+          let data = '';
+          for (const line of raw.split('\n')) {
+            if (line.startsWith('event:')) event = line.slice(6).trim();
+            else if (line.startsWith('data:')) data += line.slice(5).trim();
+          }
+          if (data) {
+            try {
+              onEvent(event, JSON.parse(data));
+            } catch {
+              // 半截数据，忽略
+            }
+          }
+        }
+      };
+    }
+
+    /** 处理一条用户输入：发请求 + 渲染流式结果 */
+    async function ask(message) {
+      if (busy) return;
+      busy = true;
+      sendEl.disabled = true;
+      emptyEl.style.display = 'none';
+
+      addMessage('user').textContent = message;
+
+      const bubble = addMessage('assistant');
+      let textEl = null; // 当前正在追加文字的容器
+
+      const appendText = (chunk) => {
+        if (!textEl) {
+          textEl = document.createElement('div');
+          bubble.appendChild(textEl);
+        }
+        textEl.textContent += chunk;
+        scrollToEnd();
+      };
+
+      const appendTool = (phase, name, payload) => {
+        textEl = null; // 工具之后的文字另起一段，保持顺序
+        const row = document.createElement('div');
+        row.className = 'tool';
+        row.textContent = phase === 'start'
+          ? '→ ' + name + '(' + shorten(payload || '{}', 80) + ')'
+          : '← ' + shorten(payload, 120);
+        bubble.appendChild(row);
+        scrollToEnd();
+      };
+
+      const parse = createSseParser((event, data) => {
+        if (event === 'text') appendText(data.chunk);
+        else if (event === 'tool' && data.phase === 'start') appendTool('start', data.name, data.args);
+        else if (event === 'tool' && data.phase === 'end') appendTool('end', data.name, data.output);
+        else if (event === 'error') {
+          const err = document.createElement('div');
+          err.className = 'error';
+          err.textContent = data.message;
+          bubble.appendChild(err);
+          scrollToEnd();
+        }
+      });
+
+      try {
+        const res = await fetch('/api/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message }),
+        });
+
+        if (!res.ok || !res.body) {
+          throw new Error('请求失败：HTTP ' + res.status);
+        }
+
+        const reader = res.body.getReader();
+        const decoder = new TextDecoder();
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          parse(decoder.decode(value, { stream: true }));
+        }
+      } catch (err) {
+        const row = document.createElement('div');
+        row.className = 'error';
+        row.textContent = '连接失败：' + err.message;
+        bubble.appendChild(row);
+        scrollToEnd();
+      } finally {
+        busy = false;
+        sendEl.disabled = false;
+        inputEl.focus();
+      }
+    }
+
+    formEl.addEventListener('submit', (e) => {
+      e.preventDefault();
+      const message = inputEl.value.trim();
+      if (!message) return;
+      inputEl.value = '';
+      ask(message);
+    });
+
+    inputEl.focus();
+  </script>
+</body>
+</html>
