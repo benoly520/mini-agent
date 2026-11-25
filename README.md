@@ -26,14 +26,15 @@
 ## 先读文档
 
 0. [`doc/000-concepts.md`](./doc/000-concepts.md) —— 概念前置：模型只生成文本，工具由你的代码执行
-1. [`doc/001-requirements.md`](./doc/001-requirements.md) —— 要做什么、怎么算做完
-2. [`doc/002-design.md`](./doc/002-design.md) —— 怎么做，含 4 个必踩的坑
-3. [`doc/003-tasks.md`](./doc/003-tasks.md) —— 按什么顺序做，每步学到什么
+1. [`doc/006-decision.md`](./doc/006-decision.md) —— 决策是怎么实现的（000 的运行时续篇，深挖那行 if）
+2. [`doc/001-requirements.md`](./doc/001-requirements.md) —— 要做什么、怎么算做完
+3. [`doc/002-design.md`](./doc/002-design.md) —— 怎么做，含 4 个必踩的坑
+4. [`doc/003-tasks.md`](./doc/003-tasks.md) —— 按什么顺序做，每步学到什么
 
 形态层（同一个核心的外壳）：
 
-4. [`doc/004-cli.md`](./doc/004-cli.md) —— 终端形态怎么实现
-5. [`doc/005-web.md`](./doc/005-web.md) —— Web 形态怎么实现
+5. [`doc/004-cli.md`](./doc/004-cli.md) —— 终端形态怎么实现
+6. [`doc/005-web.md`](./doc/005-web.md) —— Web 形态怎么实现
 
 完整索引见 [`doc/README.md`](./doc/README.md)。
 
